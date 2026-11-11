@@ -686,6 +686,26 @@
   border-bottom-left-radius: 4px;
 }
 
+/* AI 답변 내 마크다운 볼드(**단어**) 하이라이트 스타일 */
+.chat-bubble.ai .ai-highlight {
+  color: var(--color-yellow);
+  font-weight: 800;
+  background-color: rgba(255, 224, 75, 0.12);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+/* AI 답변 내 인라인 코드(`코드`) 스타일 */
+.chat-bubble.ai .ai-code {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background-color: #262626;
+  color: var(--color-mint);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  border: 1px solid #333333;
+}
+
 .chat-bubble.system {
   align-self: center;
   font-size: 0.8rem;
