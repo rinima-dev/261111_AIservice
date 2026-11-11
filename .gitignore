@@ -1,0 +1,18 @@
+# 의존성 패키지 폴더
+node_modules/
+
+# 로컬 개발 환경 변수 파일 (API 키 유출 방지)
+.env
+.env.local
+.env.*.local
+
+# Vercel 배포 캐시 및 빌드 결과물
+.vercel/
+
+# OS 자동 생성 파일
+.DS_Store
+Thumbs.db
+
+
+.vercel
+.env*
