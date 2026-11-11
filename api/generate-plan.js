@@ -1,6 +1,7 @@
 // ==============================================================================
 // api/generate-plan.js
 // Vercel Serverless Function - AI 맞춤형 학습 플래너 생성 API
+// (최대 180일/6개월 지원)
 // ==============================================================================
 
 const OpenAI = require('openai');
@@ -51,8 +52,9 @@ module.exports = async function handler(req, res) {
   const parsedDuration = parseInt(durationDays, 10);
   const parsedHours = parseFloat(dailyHours);
 
-  if (isNaN(parsedDuration) || parsedDuration <= 0) {
-    return res.status(400).json({ error: '학습 기간은 1일 이상이어야 합니다.' });
+  // 최대 180일(6개월) 제한 적용
+  if (isNaN(parsedDuration) || parsedDuration <= 0 || parsedDuration > 180) {
+    return res.status(400).json({ error: '학습 기간은 1일부터 최대 180일(6개월)까지 설정 가능합니다.' });
   }
 
   if (isNaN(parsedHours) || parsedHours <= 0) {
@@ -88,18 +90,18 @@ module.exports = async function handler(req, res) {
 }
 
 규칙:
-1. roadmap은 전체 기간을 3~5개 단계(step)로 논리적으로 나눈 마일스톤이어야 합니다.
-2. tasks는 1일차부터 ${parsedDuration}일차까지 매일 수행할 과제를 작성하세요. (단, 기간이 30일을 초과하는 경우 핵심 주차별 과제 30개로 압축하여 day 번호를 1~30으로 부여하세요.)
+1. roadmap은 전체 기간을 3~6개 단계(step)로 논리적으로 나눈 마일스톤이어야 합니다.
+2. tasks는 1일차부터 ${parsedDuration}일차까지 매일 수행할 구체적인 과제를 생성하세요. (학습 기간이 긴 경우 중요한 주기별 실천 과제를 Day 1부터 Day ${parsedDuration}까지 고르게 분포되도록 작성하세요.)
 3. 각 task의 id는 'task-1', 'task-2' 형태로 고유하게 부여하세요.
 4. 모든 title과 description은 학습자가 명확하고 쉽게 실천할 수 있도록 친절하고 구체적인 한국어로 작성하세요.`;
 
     const userMessage = `[학습자 요청 정보]
 - 학습 목표: ${goal}
-- 총 학습 기간: ${parsedDuration}일
+- 총 학습 기간: ${parsedDuration}일 (최대 180일)
 - 하루 학습 가능 시간: ${parsedHours}시간
 - 현재 학습 수준/상태: ${currentLevel}
 
-위 조건에 맞는 최고의 학습 로드맵과 일일 실천 스케줄을 JSON으로 생성해주세요.`;
+위 조건에 맞는 최고의 학습 로드맵과 1일차부터 ${parsedDuration}일차까지의 일일 실천 스케줄을 JSON으로 생성해주세요.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -148,4 +150,3 @@ module.exports = async function handler(req, res) {
     });
   }
 };
-
