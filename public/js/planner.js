@@ -1,7 +1,7 @@
 // ==============================================================================
 // public/js/planner.js
 // 학습 플래너 생성, 로드맵/캘린더 렌더링, LocalStorage 상태 관리 & 성과 분석 모듈
-// (30일 단위 캘린더 뷰, 날짜별 + 과제 추가, 최대 180일 지원)
+// (설정한 일수까지만 깔끔하게 표시하는 캘린더 뷰, 30일 단위 페이징, 최대 180일 지원)
 // ==============================================================================
 
 // LocalStorage 저장 키 이름
@@ -87,7 +87,8 @@ function renderRoadmap(roadmapList) {
 }
 
 /**
- * 4. 일일 스케줄을 달력(캘린더) 7열 그리드로 렌더링하고, 30일 단위 페이지네이션을 처리하는 함수
+ * 4. 일일 스케줄을 달력(캘린더) 그리드로 렌더링하는 함수
+ * - [핵심 개선]: 10일처럼 30일 미만일 때는 불필요한 빈 날짜를 만들지 않고 설정한 Day(maxDay)까지만 딱 맞추어 깔끔하게 렌더링합니다!
  * @param {Array} taskList - [{ id, day, title, completed }, ...]
  */
 function renderCalendar(taskList) {
@@ -111,7 +112,7 @@ function renderCalendar(taskList) {
     return;
   }
 
-  // 전체 등록된 최대 Day 계산 (최소 1일, 최대 180일)
+  // 전체 등록된 과제 중 가장 큰 일차(Day) 계산 (예: 10일 목표면 maxDay = 10)
   const maxDay = Math.max(...taskList.map(t => Number(t.day) || 1), 1);
   const totalPages = Math.ceil(maxDay / DAYS_PER_PAGE);
 
@@ -119,10 +120,15 @@ function renderCalendar(taskList) {
   if (currentCalendarPage > totalPages) currentCalendarPage = totalPages;
   if (currentCalendarPage < 1) currentCalendarPage = 1;
 
+  // 1. 현재 페이지 시작 날짜 계산
   const startDay = (currentCalendarPage - 1) * DAYS_PER_PAGE + 1;
-  const endDay = Math.min(currentCalendarPage * DAYS_PER_PAGE, Math.max(maxDay, currentCalendarPage * DAYS_PER_PAGE));
+  
+  // 2. 현재 페이지 끝 날짜 계산 (★ 30일 고정이 아닌 실제 maxDay를 넘지 않도록 제한!)
+  // 예: 10일 플랜이면 startDay = 1, endDay = 10
+  // 예: 45일 플랜 2페이지면 startDay = 31, endDay = 45
+  const endDay = Math.min(currentCalendarPage * DAYS_PER_PAGE, maxDay);
 
-  // 30일 페이지네이션 바 UI 업데이트
+  // 30일 페이지네이션 바 UI 업데이트 (30일 초과 시에만 노출)
   if (paginationBar) {
     if (maxDay > DAYS_PER_PAGE) {
       paginationBar.style.display = 'flex';
@@ -151,7 +157,7 @@ function renderCalendar(taskList) {
     }
   });
 
-  // 캘린더 날짜 칸(Cell) HTML 동적 생성
+  // 캘린더 날짜 칸(Cell) HTML 동적 생성 (startDay부터 실제 endDay까지만 생성!)
   let html = '';
   for (let d = startDay; d <= endDay; d++) {
     const dayTasks = tasksByDay[d] || [];
