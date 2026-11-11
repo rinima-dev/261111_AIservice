@@ -1,7 +1,7 @@
 // ==============================================================================
 // public/js/planner.js
 // 학습 플래너 생성, 로드맵/캘린더 렌더링, LocalStorage 상태 관리 & 성과 분석 모듈
-// (설정한 일수까지만 깔끔하게 표시하는 캘린더 뷰, 30일 단위 페이징, 최대 180일 지원)
+// (설정한 일수 durationDays까지만 엄격하게 제한하여 깔끔하게 렌더링하는 캘린더)
 // ==============================================================================
 
 // LocalStorage 저장 키 이름
@@ -10,6 +10,7 @@ const PLANNER_STORAGE_KEY = 'ai_planner_data';
 // 메모리에 유지되는 현재 플래너 데이터 객체
 let currentPlannerData = {
   goal: '',
+  durationDays: 0, // 사용자가 설정한 실제 목표 기간 (일수)
   roadmap: [],
   tasks: []
 };
@@ -33,16 +34,20 @@ function loadSavedPlanner() {
     if (parsed && Array.isArray(parsed.roadmap) && Array.isArray(parsed.tasks)) {
       currentPlannerData = parsed;
       renderRoadmap(currentPlannerData.roadmap);
-      renderCalendar(currentPlannerData.tasks);
+      renderCalendar(currentPlannerData.tasks, currentPlannerData.durationDays);
 
       // 주차 선택 드롭다운 갱신 및 달성률 계산
-      updateWeekOptions(currentPlannerData.tasks);
+      updateWeekOptions(currentPlannerData.tasks, currentPlannerData.durationDays);
       updateMetrics(currentPlannerData.tasks);
 
-      // 폼의 목표 입력창에도 이전 목표 채워넣기
+      // 폼의 목표 입력창 및 기간 입력창에도 이전 값 채워넣기
       const goalInput = document.getElementById('goal-input');
+      const durationInput = document.getElementById('duration-input');
       if (goalInput && currentPlannerData.goal) {
         goalInput.value = currentPlannerData.goal;
+      }
+      if (durationInput && currentPlannerData.durationDays) {
+        durationInput.value = currentPlannerData.durationDays;
       }
     }
   } catch (error) {
@@ -88,10 +93,11 @@ function renderRoadmap(roadmapList) {
 
 /**
  * 4. 일일 스케줄을 달력(캘린더) 그리드로 렌더링하는 함수
- * - [핵심 개선]: 10일처럼 30일 미만일 때는 불필요한 빈 날짜를 만들지 않고 설정한 Day(maxDay)까지만 딱 맞추어 깔끔하게 렌더링합니다!
+ * - [핵심 원칙]: 사용자가 설정한 기간(userDuration)이 10일이면 정확히 Day 1 ~ Day 10까지만 렌더링합니다!
  * @param {Array} taskList - [{ id, day, title, completed }, ...]
+ * @param {number} userDuration - 사용자가 입력했던 총 학습 기간 (일수)
  */
-function renderCalendar(taskList) {
+function renderCalendar(taskList, userDuration) {
   const gridContainer = document.getElementById('calendar-grid-container');
   const paginationBar = document.getElementById('calendar-pagination');
   const weekdaysHeader = document.getElementById('calendar-weekdays');
@@ -101,7 +107,7 @@ function renderCalendar(taskList) {
 
   if (!gridContainer) return;
 
-  // 플래너에 등록된 과제가 없는 경우
+  // 플래너에 등록된 과제가 없거나 빈 경우
   if (!taskList || taskList.length === 0) {
     gridContainer.innerHTML = `
       <div class="empty-placeholder" style="grid-column: 1 / -1;">
@@ -112,8 +118,9 @@ function renderCalendar(taskList) {
     return;
   }
 
-  // 전체 등록된 과제 중 가장 큰 일차(Day) 계산 (예: 10일 목표면 maxDay = 10)
-  const maxDay = Math.max(...taskList.map(t => Number(t.day) || 1), 1);
+  // ★ 사용자가 지정한 기간을 최우선으로 하되, 없으면 task 중 최대 Day 사용
+  const targetDuration = parseInt(userDuration, 10) || Math.max(...taskList.map(t => Number(t.day) || 1), 1);
+  const maxDay = Math.max(1, targetDuration);
   const totalPages = Math.ceil(maxDay / DAYS_PER_PAGE);
 
   // 현재 페이지 범위 안전 보정
@@ -123,9 +130,8 @@ function renderCalendar(taskList) {
   // 1. 현재 페이지 시작 날짜 계산
   const startDay = (currentCalendarPage - 1) * DAYS_PER_PAGE + 1;
   
-  // 2. 현재 페이지 끝 날짜 계산 (★ 30일 고정이 아닌 실제 maxDay를 넘지 않도록 제한!)
-  // 예: 10일 플랜이면 startDay = 1, endDay = 10
-  // 예: 45일 플랜 2페이지면 startDay = 31, endDay = 45
+  // 2. 현재 페이지 끝 날짜 계산 (★ 무조건 사용자가 설정한 maxDay를 1일도 넘지 않도록 제한!)
+  // 예: 10일 플랜이면 startDay = 1, endDay = 10 (Day 11부터는 절대 생성 안 됨!)
   const endDay = Math.min(currentCalendarPage * DAYS_PER_PAGE, maxDay);
 
   // 30일 페이지네이션 바 UI 업데이트 (30일 초과 시에만 노출)
@@ -144,7 +150,7 @@ function renderCalendar(taskList) {
 
   if (weekdaysHeader) weekdaysHeader.style.display = 'grid';
 
-  // Day별로 과제들을 그룹핑 (예: { 1: [task1, task2], 2: [task3] })
+  // Day별로 과제들을 그룹핑 (오직 startDay부터 endDay 범위 내 과제만 매핑)
   const tasksByDay = {};
   for (let d = startDay; d <= endDay; d++) {
     tasksByDay[d] = [];
@@ -157,7 +163,7 @@ function renderCalendar(taskList) {
     }
   });
 
-  // 캘린더 날짜 칸(Cell) HTML 동적 생성 (startDay부터 실제 endDay까지만 생성!)
+  // 캘린더 날짜 칸(Cell) HTML 동적 생성 (startDay부터 실제 endDay까지만 깔끔하게 생성!)
   let html = '';
   for (let d = startDay; d <= endDay; d++) {
     const dayTasks = tasksByDay[d] || [];
@@ -285,7 +291,7 @@ function setupCalendarPagination() {
     prevBtn.addEventListener('click', () => {
       if (currentCalendarPage > 1) {
         currentCalendarPage--;
-        renderCalendar(currentPlannerData.tasks);
+        renderCalendar(currentPlannerData.tasks, currentPlannerData.durationDays);
       }
     });
   }
@@ -293,7 +299,7 @@ function setupCalendarPagination() {
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
       currentCalendarPage++;
-      renderCalendar(currentPlannerData.tasks);
+      renderCalendar(currentPlannerData.tasks, currentPlannerData.durationDays);
     });
   }
 }
@@ -308,8 +314,8 @@ function deleteTask(taskId) {
 
   currentPlannerData.tasks.splice(index, 1);
   savePlannerToStorage();
-  renderCalendar(currentPlannerData.tasks);
-  updateWeekOptions(currentPlannerData.tasks);
+  renderCalendar(currentPlannerData.tasks, currentPlannerData.durationDays);
+  updateWeekOptions(currentPlannerData.tasks, currentPlannerData.durationDays);
   updateMetrics(currentPlannerData.tasks);
   showToast('과제가 삭제되었습니다.', 'success');
 }
@@ -340,8 +346,8 @@ function addNewTask(day, title) {
   currentPlannerData.tasks.sort((a, b) => Number(a.day) - Number(b.day));
 
   savePlannerToStorage();
-  renderCalendar(currentPlannerData.tasks);
-  updateWeekOptions(currentPlannerData.tasks);
+  renderCalendar(currentPlannerData.tasks, currentPlannerData.durationDays);
+  updateWeekOptions(currentPlannerData.tasks, currentPlannerData.durationDays);
   updateMetrics(currentPlannerData.tasks);
   showToast(`Day ${newTask.day}에 새 과제가 추가되었습니다!`, 'success');
 }
@@ -373,10 +379,11 @@ function toggleTaskCompletion(taskId, isCompleted) {
 }
 
 /**
- * 6. 과제 목록의 최대 Day를 계산하여 주차(1주차, 2주차...) 옵션을 동적으로 생성하는 함수
+ * 6. 사용자가 설정한 기간(userDuration)을 기준으로 주차(1주차, 2주차...) 옵션을 동적으로 생성하는 함수
  * @param {Array} taskList - 과제 목록
+ * @param {number} userDuration - 설정한 일수
  */
-function updateWeekOptions(taskList) {
+function updateWeekOptions(taskList, userDuration) {
   const weekSelect = document.getElementById('week-select');
   if (!weekSelect) return;
 
@@ -386,18 +393,16 @@ function updateWeekOptions(taskList) {
     return;
   }
 
-  // 등록된 과제 중 가장 큰 Day 찾기
-  const maxDay = Math.max(...taskList.map(t => Number(t.day) || 1), 7);
-  // 7일 단위로 총 몇 주차까지 있는지 계산
-  const totalWeeks = Math.ceil(maxDay / 7);
+  // 사용자가 설정한 기간(userDuration) 기준으로 주차 계산
+  const targetDuration = parseInt(userDuration, 10) || Math.max(...taskList.map(t => Number(t.day) || 1), 7);
+  const totalWeeks = Math.ceil(targetDuration / 7);
 
-  // 이전 선택값 유지 시도
   const prevSelected = selectedWeek;
   weekSelect.innerHTML = '';
 
   for (let w = 1; w <= totalWeeks; w++) {
     const startDay = (w - 1) * 7 + 1;
-    const endDay = w * 7;
+    const endDay = Math.min(w * 7, targetDuration); // 주차의 마지막 Day도 설정 일수를 넘지 않게 조정!
     const option = document.createElement('option');
     option.value = w;
     option.textContent = `${w}주차 (Day ${startDay}~${endDay})`;
@@ -439,7 +444,7 @@ function updateMetrics(taskList) {
     return;
   }
 
-  // 1. 사용자가 선택한 주차의 Day 범위 계산 (1주차 -> 1~7, 2주차 -> 8~14)
+  // 1. 사용자가 선택한 주차의 Day 범위 계산
   const currentWeek = selectedWeek || 1;
   const startDay = (currentWeek - 1) * 7 + 1;
   const endDay = currentWeek * 7;
@@ -573,11 +578,15 @@ function setupPlannerForm() {
         throw new Error(result.error || '플래너 생성에 실패했습니다.');
       }
 
-      // 플래너 데이터 메모리 및 로컬스토리지 저장
+      // ★ AI가 반환한 tasks 중 사용자가 설정한 numDays를 초과하는 것이 있다면 엄격히 잘라냄!
+      const sanitizedTasks = (result.tasks || []).filter(t => Number(t.day) <= numDays);
+
+      // 플래너 데이터 메모리 및 로컬스토리지 저장 (durationDays 보존)
       currentPlannerData = {
         goal: result.goal || goal,
+        durationDays: numDays,
         roadmap: result.roadmap || [],
-        tasks: result.tasks || []
+        tasks: sanitizedTasks
       };
       savePlannerToStorage();
 
@@ -585,11 +594,11 @@ function setupPlannerForm() {
       currentCalendarPage = 1;
       selectedWeek = 1;
       renderRoadmap(currentPlannerData.roadmap);
-      renderCalendar(currentPlannerData.tasks);
-      updateWeekOptions(currentPlannerData.tasks);
+      renderCalendar(currentPlannerData.tasks, currentPlannerData.durationDays);
+      updateWeekOptions(currentPlannerData.tasks, currentPlannerData.durationDays);
       updateMetrics(currentPlannerData.tasks);
 
-      showToast('🎉 맞춤형 캘린더 학습 플래너가 성공적으로 생성되었습니다!', 'success');
+      showToast(`🎉 ${numDays}일 맞춤형 캘린더 플래너가 생성되었습니다!`, 'success');
 
       // 대시보드 영역으로 부드럽게 스크롤 이동
       const dashboard = document.getElementById('dashboard-section');
@@ -680,6 +689,7 @@ function resetPlanner() {
   // 1. 메모리 및 LocalStorage 비우기
   currentPlannerData = {
     goal: '',
+    durationDays: 0,
     roadmap: [],
     tasks: []
   };
@@ -689,8 +699,8 @@ function resetPlanner() {
 
   // 2. 화면 초기화
   renderRoadmap([]);
-  renderCalendar([]);
-  updateWeekOptions([]);
+  renderCalendar([], 0);
+  updateWeekOptions([], 0);
   updateMetrics([]);
 
   // 3. 입력 폼 초기화
