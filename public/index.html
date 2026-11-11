@@ -159,10 +159,15 @@
       <!-- 성과 분석 요약 프로그레스 바 -->
       <div class="metrics-panel">
         <div class="metrics-grid">
-          <!-- 주간 성과 달성률 -->
+          <!-- 주간 성과 달성률 (주차 선택 드롭다운 포함) -->
           <div class="metric-item">
             <div class="metric-header">
-              <span>📅 최근 7일(주간) 달성률</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>📅 주간 달성률:</span>
+                <select id="week-select" class="form-select" style="width: auto; padding: 4px 8px; font-size: 0.8rem; height: 32px; border-radius: 6px;" aria-label="주차 선택">
+                  <option value="1">1주차 (Day 1~7)</option>
+                </select>
+              </div>
               <span id="weekly-metric-percent" class="metric-percentage">0%</span>
             </div>
             <div class="progress-track">

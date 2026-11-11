@@ -6,15 +6,19 @@
 // LocalStorage 저장 키 이름
 const PLANNER_STORAGE_KEY = 'ai_planner_data';
 
-// 메모리에 유지되는 현재 플래너 데이터
+// 메모리에 유지되는 현재 플래너 데이터 객체
 let currentPlannerData = {
   goal: '',
   roadmap: [],
   tasks: []
 };
 
+// 현재 사용자가 선택한 주차 (기본값: 1주차)
+let selectedWeek = 1;
+
 /**
  * 1. 로컬 스토리지에 저장된 플래너 데이터 불러오기 및 초기 렌더링
+ * 브라우저를 새로고침하거나 다시 방문했을 때 이전 학습 내역을 복원합니다.
  */
 function loadSavedPlanner() {
   try {
@@ -26,6 +30,9 @@ function loadSavedPlanner() {
       currentPlannerData = parsed;
       renderRoadmap(currentPlannerData.roadmap);
       renderTaskList(currentPlannerData.tasks);
+      
+      // 주차 선택 드롭다운 갱신 및 달성률 계산
+      updateWeekOptions(currentPlannerData.tasks);
       updateMetrics(currentPlannerData.tasks);
 
       // 폼의 목표 입력창에도 이전 목표 채워넣기
@@ -145,6 +152,7 @@ function deleteTask(taskId) {
   currentPlannerData.tasks.splice(index, 1);
   savePlannerToStorage();
   renderTaskList(currentPlannerData.tasks);
+  updateWeekOptions(currentPlannerData.tasks);
   updateMetrics(currentPlannerData.tasks);
   showToast('과제가 삭제되었습니다.', 'success');
 }
@@ -176,6 +184,7 @@ function addNewTask(day, title) {
 
   savePlannerToStorage();
   renderTaskList(currentPlannerData.tasks);
+  updateWeekOptions(currentPlannerData.tasks);
   updateMetrics(currentPlannerData.tasks);
   showToast(`Day ${newTask.day}에 새 과제가 추가되었습니다!`, 'success');
 }
@@ -228,10 +237,68 @@ function toggleTaskCompletion(taskId, isCompleted) {
 }
 
 /**
- * 6. 주간 및 전체 성과 분석 지표 계산 및 프로그레스 바 갱신 함수 (docs/03_planner_features.md)
+ * 6. 과제 목록의 최대 Day를 계산하여 주차(1주차, 2주차...) 옵션을 동적으로 생성하는 함수
+ * @param {Array} taskList - 과제 목록
+ */
+function updateWeekOptions(taskList) {
+  const weekSelect = document.getElementById('week-select');
+  if (!weekSelect) return;
+
+  if (!taskList || taskList.length === 0) {
+    weekSelect.innerHTML = '<option value="1">1주차 (Day 1~7)</option>';
+    selectedWeek = 1;
+    return;
+  }
+
+  // 등록된 과제 중 가장 큰 Day 찾기
+  const maxDay = Math.max(...taskList.map(t => Number(t.day) || 1), 7);
+  // 7일 단위로 총 몇 주차까지 있는지 계산 (예: 14일 -> 2주차, 10일 -> 2주차)
+  const totalWeeks = Math.ceil(maxDay / 7);
+
+  // 이전 선택값 유지 시도
+  const prevSelected = selectedWeek;
+  weekSelect.innerHTML = '';
+
+  for (let w = 1; w <= totalWeeks; w++) {
+    const startDay = (w - 1) * 7 + 1;
+    const endDay = w * 7;
+    const option = document.createElement('option');
+    option.value = w;
+    option.textContent = `${w}주차 (Day ${startDay}~${endDay})`;
+    if (w === prevSelected) {
+      option.selected = true;
+    }
+    weekSelect.appendChild(option);
+  }
+
+  // 이전 선택값이 전체 주차 범위 밖이면 1주차로 리셋
+  if (prevSelected > totalWeeks) {
+    selectedWeek = 1;
+    weekSelect.value = "1";
+  } else {
+    selectedWeek = parseInt(weekSelect.value, 10) || 1;
+  }
+}
+
+/**
+ * 주차 선택 드롭다운 이벤트 리스너 바인딩 함수
+ */
+function setupWeekSelectListener() {
+  const weekSelect = document.getElementById('week-select');
+  if (!weekSelect) return;
+
+  weekSelect.addEventListener('change', (e) => {
+    selectedWeek = parseInt(e.target.value, 10) || 1;
+    // 선택된 주차에 맞게 달성률 다시 계산
+    updateMetrics(currentPlannerData.tasks);
+  });
+}
+
+/**
+ * 7. 주간(선택한 주차 기준 7일 단위) 및 전체 성과 분석 지표 계산 및 프로그레스 바 갱신 함수
  * 
- * - 주간 성과 달성률: 최근 7일(day <= 7)간 완료한 할 일 수 / 최근 7일간 전체 할 일 수 * 100
- * - 월간/전체 성과 달성률: 전체 완료한 할 일 수 / 전체 할 일 수 * 100
+ * - 선택된 주차 달성률: 선택한 주차(예: 2주차면 Day 8~14)의 완료 과제 수 / 해당 주차 전체 과제 수 * 100
+ * - 전체 성과 달성률: 전체 완료한 과제 수 / 전체 과제 수 * 100
  * - 0으로 나누기(NaN) 방지 처리
  */
 function updateMetrics(taskList) {
@@ -241,8 +308,17 @@ function updateMetrics(taskList) {
     return;
   }
 
-  // 1. 주간(최근 7일차 이내) 과제 필터링
-  const weeklyTasks = taskList.filter(t => Number(t.day) <= 7);
+  // 1. 사용자가 선택한 주차의 Day 범위 계산 (예: 1주차 -> 1~7, 2주차 -> 8~14)
+  const currentWeek = selectedWeek || 1;
+  const startDay = (currentWeek - 1) * 7 + 1;
+  const endDay = currentWeek * 7;
+
+  // 해당 주차 범위에 속하는 과제만 필터링
+  const weeklyTasks = taskList.filter(t => {
+    const day = Number(t.day);
+    return day >= startDay && day <= endDay;
+  });
+
   const weeklyCompleted = weeklyTasks.filter(t => t.completed).length;
   const weeklyRate = weeklyTasks.length > 0 
     ? Math.round((weeklyCompleted / weeklyTasks.length) * 100) 
@@ -254,6 +330,7 @@ function updateMetrics(taskList) {
     ? Math.round((totalCompleted / taskList.length) * 100) 
     : 0;
 
+  // 프로그레스 바 UI 반영
   applyProgressUI('weekly', weeklyRate);
   applyProgressUI('overall', overallRate);
 
@@ -307,12 +384,15 @@ function applyProgressUI(prefix, percent) {
 }
 
 /**
- * 7. 학습 목표 설정 폼 제출 이벤트 바인딩 및 OpenAI API 호출
+ * 8. 학습 목표 설정 폼 제출 이벤트 바인딩 및 OpenAI API 호출
  */
 function setupPlannerForm() {
   const form = document.getElementById('goal-form');
   const generateBtn = document.getElementById('generate-btn');
   if (!form) return;
+
+  // 주차 선택 이벤트 리스너 바인딩 등록
+  setupWeekSelectListener();
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -366,6 +446,10 @@ function setupPlannerForm() {
       // UI 렌더링
       renderRoadmap(currentPlannerData.roadmap);
       renderTaskList(currentPlannerData.tasks);
+      
+      // 플래너 생성 시 주차 선택 옵션 다시 구성하고 1주차로 초기화
+      selectedWeek = 1;
+      updateWeekOptions(currentPlannerData.tasks);
       updateMetrics(currentPlannerData.tasks);
 
       showToast('🎉 맞춤형 학습 플래너가 성공적으로 생성되었습니다!', 'success');
@@ -392,7 +476,7 @@ function setupPlannerForm() {
 }
 
 /**
- * 8. 학습 계획을 텍스트로 깔끔하게 정리하여 클립보드에 복사하는 함수
+ * 9. 학습 계획을 텍스트로 깔끔하게 정리하여 클립보드에 복사하는 함수
  */
 async function copyPlannerToClipboard() {
   if (!currentPlannerData || (!currentPlannerData.roadmap.length && !currentPlannerData.tasks.length)) {
@@ -446,7 +530,7 @@ async function copyPlannerToClipboard() {
 }
 
 /**
- * 9. 플래너 데이터 및 화면 상태 초기화 함수 (확인 창 포함)
+ * 10. 플래너 데이터 및 화면 상태 초기화 함수 (확인 창 포함)
  */
 function resetPlanner() {
   if (!currentPlannerData || (!currentPlannerData.roadmap.length && !currentPlannerData.tasks.length)) {
@@ -464,10 +548,12 @@ function resetPlanner() {
     tasks: []
   };
   localStorage.removeItem(PLANNER_STORAGE_KEY);
+  selectedWeek = 1;
 
   // 2. 화면 초기화
   renderRoadmap([]);
   renderTaskList([]);
+  updateWeekOptions([]);
   updateMetrics([]);
 
   // 3. 입력 폼 초기화
@@ -481,7 +567,7 @@ function resetPlanner() {
 }
 
 /**
- * 10. 대시보드 상단 복사 및 초기화 버튼 이벤트 리스너 연결
+ * 11. 대시보드 상단 복사 및 초기화 버튼 이벤트 리스너 연결
  */
 function setupDashboardActions() {
   const copyBtn = document.getElementById('copy-plan-btn');
@@ -495,4 +581,3 @@ function setupDashboardActions() {
     resetBtn.addEventListener('click', resetPlanner);
   }
 }
-
