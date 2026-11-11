@@ -1,58 +1,115 @@
 /* ==============================================================================
    public/css/components.css
-   AI 스마트 학습 플래너 - 컴포넌트 UI 스타일 정의
+   AI 스마트 학습 플래너 - 컴포넌트 UI 스타일
+   디자인 테마: 블랙 배경 + 볼드 컬러 팔레트
    ============================================================================== */
 
-/* 1. 기본 카드 컴포넌트 (Card) */
+/* ================================================================
+   1. 기본 카드 컴포넌트 (Card)
+   - 각 섹션마다 고유한 컬러 테마 적용
+   ================================================================ */
 .card {
   background-color: var(--surface-color);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  padding: 24px;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  transition: box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-/* 탭 네비게이션 시스템 (Tab Navigation System) */
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 카드별 컬러 테마 (상단 보더로 구분) */
+.card-theme-purple {
+  border-top: 4px solid var(--color-purple);
+  box-shadow: 0 4px 24px rgba(168, 85, 247, 0.2);
+}
+
+.card-theme-pink {
+  border-top: 4px solid var(--color-pink);
+  box-shadow: 0 4px 24px rgba(244, 114, 182, 0.2);
+}
+
+.card-theme-orange {
+  border-top: 4px solid var(--color-orange);
+  box-shadow: 0 4px 24px rgba(251, 146, 60, 0.2);
+}
+
+.card-theme-mint {
+  border-top: 4px solid var(--color-mint);
+  box-shadow: 0 4px 24px rgba(45, 212, 191, 0.2);
+}
+
+.card-theme-yellow {
+  border-top: 4px solid var(--color-yellow);
+  box-shadow: 0 4px 24px rgba(255, 224, 75, 0.2);
+}
+
+/* ================================================================
+   2. 탭 네비게이션 시스템 (Tab Navigation)
+   ================================================================ */
 .tab-nav {
   display: flex;
-  gap: 8px;
-  background-color: #F1F5F9;
+  gap: 6px;
+  background-color: #111111;
   padding: 6px;
-  border-radius: var(--radius-md);
-  margin-bottom: 20px;
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  border: 2px solid var(--border-color);
 }
 
 .tab-btn {
   flex: 1;
-  padding: 10px 18px;
-  border: none;
+  padding: 10px 16px;
+  border: 2px solid transparent;
   background-color: transparent;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.tab-btn:hover {
-  color: var(--primary-color);
-  background-color: rgba(255, 255, 255, 0.6);
+/* 탭 활성 상태 - 카드 테마에 따라 색상 변경 */
+.card-theme-purple .tab-btn.active {
+  background-color: var(--color-purple);
+  color: var(--color-white);
+  border-color: var(--color-purple);
 }
 
-.tab-btn.active {
-  background-color: #FFFFFF;
-  color: var(--primary-color);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.card-theme-pink .tab-btn.active {
+  background-color: var(--color-pink);
+  color: var(--color-black);
+  border-color: var(--color-pink);
+}
+
+.card-theme-orange .tab-btn.active {
+  background-color: var(--color-orange);
+  color: var(--color-black);
+  border-color: var(--color-orange);
+}
+
+.card-theme-mint .tab-btn.active {
+  background-color: var(--color-mint);
+  color: var(--color-black);
+  border-color: var(--color-mint);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--text-primary);
+  background-color: #2A2A2A;
+  border-color: var(--border-bright);
 }
 
 .tab-content {
@@ -66,43 +123,68 @@
 @keyframes tabFadeIn {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.card:hover {
-  box-shadow: var(--shadow-md);
-}
-
+/* ================================================================
+   3. 카드 헤더 (Card Header)
+   ================================================================ */
 .card-header {
   margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .card-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 900;
   color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: -0.01em;
+}
+
+/* 카드 제목 색상 - 카드 테마에 따라 */
+.card-theme-purple .card-title {
+  color: var(--color-purple);
+}
+
+.card-theme-pink .card-title {
+  color: var(--color-pink);
+}
+
+.card-theme-orange .card-title {
+  color: var(--color-orange);
+}
+
+.card-theme-mint .card-title {
+  color: var(--color-mint);
+}
+
+.card-theme-yellow .card-title {
+  color: var(--color-yellow);
 }
 
 .card-subtitle {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  font-size: 0.82rem;
+  color: var(--text-muted);
   margin-top: 4px;
+  font-weight: 700;
 }
 
-/* 2. 폼 요소 스타일 (Form Controls) */
+/* ================================================================
+   4. 폼 요소 (Form Controls)
+   ================================================================ */
 .form-group {
   margin-bottom: 16px;
   display: flex;
@@ -112,8 +194,9 @@
 
 .form-label {
   font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
 }
 
 .form-label .required {
@@ -125,13 +208,14 @@
 .form-select,
 .form-textarea {
   width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid var(--border-color);
+  padding: 11px 14px;
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-md);
   font-family: inherit;
   font-size: 0.95rem;
+  font-weight: 700;
   color: var(--text-primary);
-  background-color: #FFFFFF;
+  background-color: #111111;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -139,13 +223,20 @@
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  border-color: var(--color-yellow);
+  box-shadow: 0 0 0 3px rgba(255, 224, 75, 0.2);
 }
 
 .form-input::placeholder,
 .form-textarea::placeholder {
   color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* select 옵션 배경 */
+.form-select option {
+  background-color: #1A1A1A;
+  color: var(--text-primary);
 }
 
 .form-row {
@@ -160,7 +251,9 @@
   }
 }
 
-/* 3. 버튼 컴포넌트 (Buttons) */
+/* ================================================================
+   5. 버튼 컴포넌트 (Buttons)
+   ================================================================ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -168,38 +261,48 @@
   gap: 8px;
   font-family: inherit;
   font-size: 0.95rem;
-  font-weight: 600;
-  padding: 12px 20px;
+  font-weight: 900;
+  padding: 12px 22px;
   border-radius: var(--radius-md);
-  border: none;
+  border: 2px solid transparent;
   cursor: pointer;
   transition: all var(--transition-fast);
+  letter-spacing: 0.01em;
 }
 
+/* 메인 버튼 - 노랑 */
 .btn-primary {
-  background-color: var(--primary-color);
-  color: #FFFFFF;
+  background-color: var(--color-yellow);
+  color: var(--color-black);
+  border-color: var(--color-yellow);
+  box-shadow: 0 4px 14px rgba(255, 224, 75, 0.35);
 }
 
 .btn-primary:hover:not(:disabled) {
   background-color: var(--primary-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 224, 75, 0.5);
 }
 
+/* 보조 버튼 - 민트 */
 .btn-secondary {
-  background-color: var(--secondary-color);
-  color: #FFFFFF;
+  background-color: var(--color-mint);
+  color: var(--color-black);
+  border-color: var(--color-mint);
+  box-shadow: 0 4px 14px rgba(45, 212, 191, 0.3);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--secondary-hover);
-  transform: translateY(-1px);
+  background-color: #22C9B5;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(45, 212, 191, 0.45);
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .btn-block {
@@ -211,22 +314,23 @@
   font-size: 0.85rem;
 }
 
+/* 아웃라인 버튼 */
 .btn-outline {
   background-color: transparent;
   color: var(--text-secondary);
-  border: 1.5px solid var(--border-color);
+  border: 2px solid var(--border-bright);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background-color: #F3F4F6;
-  border-color: #D1D5DB;
-  color: var(--text-primary);
+  background-color: #2A2A2A;
+  border-color: var(--color-yellow);
+  color: var(--color-yellow);
 }
 
 .btn-outline-danger {
   background-color: transparent;
   color: var(--error-color);
-  border: 1.5px solid #FCA5A5;
+  border: 2px solid #5C2020;
 }
 
 .btn-outline-danger:hover:not(:disabled) {
@@ -249,10 +353,12 @@
   align-items: center;
 }
 
-/* 4. 성과 분석 지표 컴포넌트 (Progress Metrics) */
+/* ================================================================
+   6. 성과 분석 지표 (Progress Metrics)
+   ================================================================ */
 .metrics-panel {
-  background-color: #F8FAFC;
-  border: 1px solid var(--border-color);
+  background-color: #111111;
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 20px;
   margin-bottom: 24px;
@@ -280,40 +386,43 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 800;
   color: var(--text-secondary);
 }
 
 .metric-percentage {
   font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--primary-color);
+  font-weight: 900;
+  color: var(--color-yellow);
 }
 
 .progress-track {
   width: 100%;
   height: 10px;
-  background-color: #E2E8F0;
+  background-color: #2A2A2A;
   border-radius: 999px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  /* 그라디언트: 보라 → 민트 (사진 색감 반영) */
+  background: linear-gradient(90deg, var(--color-purple), var(--color-mint));
   width: 0%;
   border-radius: 999px;
-  transition: width 0.4s ease-out;
+  transition: width 0.5s ease-out;
 }
 
-/* 5. 로드맵 타임라인/마일스톤 카드 (Roadmap View) */
+/* ================================================================
+   7. 로드맵 타임라인 (Roadmap View)
+   ================================================================ */
 .roadmap-timeline {
   display: flex;
   flex-direction: column;
   gap: 16px;
   position: relative;
-  padding-left: 24px;
+  padding-left: 28px;
 }
 
 .roadmap-timeline::before {
@@ -321,49 +430,52 @@
   position: absolute;
   top: 10px;
   bottom: 10px;
-  left: 7px;
-  width: 2px;
-  background-color: var(--border-color);
+  left: 8px;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--color-orange), var(--color-yellow));
+  border-radius: 999px;
 }
 
 .milestone-card {
   position: relative;
-  background-color: #FAFAFA;
-  border: 1px solid var(--border-color);
+  background-color: #111111;
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 16px;
-  transition: transform var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .milestone-card:hover {
   transform: translateX(4px);
-  background-color: #FFFFFF;
+  border-color: var(--color-orange);
+  background-color: #1A1A1A;
+  box-shadow: 0 4px 16px rgba(251, 146, 60, 0.2);
 }
 
 .milestone-card::before {
   content: "";
   position: absolute;
-  left: -24px;
+  left: -28px;
   top: 18px;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background-color: var(--primary-color);
-  border: 3px solid #FFFFFF;
-  box-shadow: 0 0 0 1px var(--primary-color);
+  background-color: var(--color-orange);
+  border: 3px solid var(--color-black);
+  box-shadow: 0 0 0 2px var(--color-orange), 0 0 8px rgba(251, 146, 60, 0.6);
 }
 
 .milestone-step {
   font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--primary-color);
+  font-weight: 900;
+  color: var(--color-orange);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .milestone-title {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 800;
   margin: 4px 0 6px 0;
   color: var(--text-primary);
 }
@@ -374,7 +486,9 @@
   line-height: 1.5;
 }
 
-/* 6. 일일 스케줄 체크박스 리스트 (Daily Task List) */
+/* ================================================================
+   8. 일일 스케줄 체크박스 리스트 (Daily Task List)
+   ================================================================ */
 .task-list {
   list-style: none;
   display: flex;
@@ -385,25 +499,39 @@
   padding-right: 4px;
 }
 
+/* 스크롤바 스타일 */
+.task-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.task-list::-webkit-scrollbar-track {
+  background: #111;
+}
+
+.task-list::-webkit-scrollbar-thumb {
+  background: var(--color-mint);
+  border-radius: 999px;
+}
+
 .task-item {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: 12px 14px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  background-color: #FFFFFF;
+  border: 2px solid var(--border-color);
+  background-color: #111111;
   transition: all var(--transition-fast);
 }
 
 .task-item:hover {
-  border-color: #CBD5E1;
-  background-color: #F8FAFC;
+  border-color: var(--color-mint);
+  background-color: #0D1E1C;
 }
 
 .task-item.completed {
-  background-color: var(--success-bg);
-  border-color: #A7F3D0;
+  background-color: #0D2D1E;
+  border-color: #1A5C3A;
 }
 
 .task-item.completed .task-title {
@@ -415,24 +543,27 @@
   appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
+  border: 2px solid var(--border-bright);
+  border-radius: 6px;
   cursor: pointer;
   margin-top: 2px;
   position: relative;
   flex-shrink: 0;
   transition: all var(--transition-fast);
+  background-color: transparent;
 }
 
 .task-checkbox:checked {
-  background-color: var(--secondary-color);
-  border-color: var(--secondary-color);
+  background-color: var(--color-mint);
+  border-color: var(--color-mint);
+  box-shadow: 0 0 8px rgba(45, 212, 191, 0.5);
 }
 
 .task-checkbox:checked::after {
   content: "✔";
-  color: #FFFFFF;
-  font-size: 13px;
+  color: var(--color-black);
+  font-size: 12px;
+  font-weight: 900;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -445,25 +576,26 @@
 
 .task-day-badge {
   display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  background-color: #EEF2FF;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--color-black);
+  background-color: var(--color-mint);
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: 999px;
   margin-bottom: 4px;
+  letter-spacing: 0.03em;
 }
 
 .task-title {
   font-size: 0.95rem;
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .task-delete-btn {
   background: none;
   border: none;
-  color: #9CA3AF;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 4px 8px;
   font-size: 1rem;
@@ -481,7 +613,7 @@
 .task-add-form {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px dashed var(--border-color);
+  border-top: 2px dashed var(--border-color);
   display: flex;
   gap: 8px;
   align-items: center;
@@ -496,18 +628,34 @@
   flex: 1;
 }
 
-/* 7. Q&A 대화창 컴포넌트 (Q&A Section) */
+/* ================================================================
+   9. Q&A 대화창 (Chat Box)
+   ================================================================ */
 .qa-chat-box {
   display: flex;
   flex-direction: column;
   gap: 14px;
   height: 280px;
   overflow-y: auto;
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 16px;
-  background-color: #F8FAFC;
+  background-color: #0A0A0A;
   margin-bottom: 14px;
+}
+
+/* 채팅 스크롤바 */
+.qa-chat-box::-webkit-scrollbar {
+  width: 4px;
+}
+
+.qa-chat-box::-webkit-scrollbar-track {
+  background: #111;
+}
+
+.qa-chat-box::-webkit-scrollbar-thumb {
+  background: var(--color-pink);
+  border-radius: 999px;
 }
 
 .chat-bubble {
@@ -515,22 +663,27 @@
   padding: 12px 16px;
   border-radius: var(--radius-md);
   font-size: 0.9rem;
+  font-weight: 500;
   line-height: 1.5;
 }
 
+/* 사용자 말풍선 - 핑크 */
 .chat-bubble.user {
   align-self: flex-end;
-  background-color: var(--primary-color);
-  color: #FFFFFF;
-  border-bottom-right-radius: 2px;
+  background-color: var(--color-pink);
+  color: var(--color-black);
+  font-weight: 700;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 10px rgba(244, 114, 182, 0.3);
 }
 
+/* AI 말풍선 - 다크 서피스 */
 .chat-bubble.ai {
   align-self: flex-start;
-  background-color: #FFFFFF;
+  background-color: #1A1A1A;
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-bottom-left-radius: 2px;
+  border: 2px solid var(--border-color);
+  border-bottom-left-radius: 4px;
 }
 
 .chat-bubble.system {
@@ -538,32 +691,12 @@
   font-size: 0.8rem;
   color: var(--text-muted);
   background-color: transparent;
+  font-weight: 700;
 }
 
-/* 8. 피드백 섹션 (Feedback Components) */
-.feedback-rating-select {
-  display: flex;
-  gap: 8px;
-  font-size: 1.5rem;
-  cursor: pointer;
-  user-select: none;
-}
-
-.star-btn {
-  background: none;
-  border: none;
-  font-size: 1.6rem;
-  color: #D1D5DB;
-  cursor: pointer;
-  padding: 2px;
-  transition: color var(--transition-fast);
-}
-
-.star-btn.active,
-.star-btn:hover {
-  color: #F59E0B; /* 골드 옐로우 */
-}
-
+/* ================================================================
+   10. 피드백 섹션 (Feedback Components)
+   ================================================================ */
 .feedback-list {
   display: flex;
   flex-direction: column;
@@ -574,13 +707,18 @@
 }
 
 .feedback-card {
-  border: 1px solid var(--border-color);
-  background-color: #FFFFFF;
+  border: 2px solid var(--border-color);
+  background-color: #111111;
   border-radius: var(--radius-md);
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: border-color var(--transition-fast);
+}
+
+.feedback-card:hover {
+  border-color: var(--color-yellow);
 }
 
 .feedback-card-header {
@@ -590,13 +728,13 @@
 }
 
 .feedback-author {
-  font-weight: 700;
+  font-weight: 900;
   font-size: 0.95rem;
-  color: var(--text-primary);
+  color: var(--color-yellow);
 }
 
 .feedback-stars {
-  color: #F59E0B;
+  color: var(--color-yellow);
   font-size: 0.9rem;
   letter-spacing: 2px;
 }
@@ -604,15 +742,19 @@
 .feedback-date {
   font-size: 0.75rem;
   color: var(--text-muted);
+  font-weight: 700;
 }
 
 .feedback-body {
   font-size: 0.9rem;
   color: var(--text-secondary);
   white-space: pre-line;
+  line-height: 1.6;
 }
 
-/* 9. 토스트 알림창 컴포넌트 (Toast Notification) */
+/* ================================================================
+   11. 토스트 알림창 (Toast Notification)
+   ================================================================ */
 .toast-container {
   position: fixed;
   top: 24px;
@@ -632,23 +774,24 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 800;
   display: flex;
   align-items: center;
   gap: 10px;
   animation: slideInRight 0.3s ease-out forwards;
+  border: 2px solid transparent;
 }
 
 .toast-error {
   background-color: var(--error-bg);
-  border: 1px solid #FCA5A5;
-  color: #991B1B;
+  border-color: var(--error-color);
+  color: #FF9999;
 }
 
 .toast-success {
-  background-color: var(--success-bg);
-  border: 1px solid #6EE7B7;
-  color: #065F46;
+  background-color: #0D2D1E;
+  border-color: var(--color-mint);
+  color: var(--color-mint);
 }
 
 .toast.fade-out {
@@ -660,6 +803,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -671,26 +815,29 @@
     transform: translateX(0);
     opacity: 1;
   }
+
   to {
     transform: translateX(100%);
     opacity: 0;
   }
 }
 
-/* 10. 로딩 스피너 애니메이션 (Loading Spinner) */
+/* ================================================================
+   12. 로딩 스피너 (Loading Spinner)
+   ================================================================ */
 .spinner {
   display: inline-block;
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(0, 0, 0, 0.3);
   border-radius: 50%;
-  border-top-color: #FFFFFF;
+  border-top-color: var(--color-black);
   animation: spin 0.8s linear infinite;
 }
 
 .spinner-primary {
-  border: 3px solid rgba(79, 70, 229, 0.2);
-  border-top-color: var(--primary-color);
+  border: 3px solid rgba(255, 224, 75, 0.2);
+  border-top-color: var(--color-yellow);
   width: 32px;
   height: 32px;
 }
@@ -701,23 +848,28 @@
   }
 }
 
-/* 빈 상태 안내 문구 */
+/* ================================================================
+   13. 빈 상태 안내 (Empty Placeholder)
+   ================================================================ */
 .empty-placeholder {
   text-align: center;
   padding: 40px 20px;
   color: var(--text-muted);
   font-size: 0.9rem;
+  font-weight: 700;
 }
 
-/* 11. 100% 달성 축하 모달 (Celebration Modal) */
+/* ================================================================
+   14. 100% 달성 축하 모달 (Celebration Modal)
+   ================================================================ */
 .modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
   z-index: 10000;
   display: flex;
   align-items: center;
@@ -727,26 +879,27 @@
 }
 
 .modal-card {
-  background-color: #FFFFFF;
-  border-radius: var(--radius-lg);
-  padding: 36px 28px;
+  background-color: #1A1A1A;
+  border: 3px solid var(--color-yellow);
+  border-radius: var(--radius-xl);
+  padding: 40px 32px;
   max-width: 440px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 60px rgba(255, 224, 75, 0.3);
   animation: scaleUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .modal-emoji {
-  font-size: 3rem;
-  margin-bottom: 12px;
+  font-size: 3.5rem;
+  margin-bottom: 14px;
   animation: bounce 1s infinite alternate;
 }
 
 .modal-title {
-  font-size: 1.45rem;
-  font-weight: 800;
-  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--color-yellow);
   margin-bottom: 10px;
 }
 
@@ -754,7 +907,8 @@
   font-size: 0.95rem;
   color: var(--text-secondary);
   line-height: 1.6;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  font-weight: 700;
 }
 
 .modal-actions {
@@ -763,22 +917,42 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleUp {
-  from { transform: scale(0.85); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes bounce {
-  from { transform: translateY(0); }
-  to { transform: translateY(-8px); }
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-10px);
+  }
 }
 
-/* 12. 인쇄 전용 모드 (Print CSS) */
+/* ================================================================
+   15. 인쇄 전용 모드 (Print CSS)
+   ================================================================ */
 @media print {
+
   .site-header p,
   .top-grid,
   #feedback-section,
@@ -799,9 +973,4 @@
     border: 1px solid #D1D5DB !important;
     page-break-inside: avoid;
   }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr 1fr !important;
-  }
 }
-

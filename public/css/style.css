@@ -1,43 +1,72 @@
 /* ==============================================================================
    public/css/style.css
    AI 스마트 학습 플래너 - 전역 스타일 & 반응형 레이아웃 시스템
+   디자인 테마: 블랙 배경 + 볼드 컬러 팔레트 (참고 이미지 기반)
    ============================================================================== */
 
-/* 1. 디자인 시스템 전역 CSS 변수 정의 (docs/02_ui_ux_guidelines.md 규격 준수) */
-:root {
-  /* 주요 테마 컬러 */
-  --primary-color: #4F46E5;       /* 인디고 블루: 신뢰감 및 학습 집중 */
-  --primary-hover: #4338CA;       /* 인디고 블루 호버 색상 */
-  --secondary-color: #10B981;     /* 에메랄드 그린: 완료, 성공 및 진척도 */
-  --secondary-hover: #059669;     /* 에메랄드 그린 호버 색상 */
-  --background-color: #F9FAFB;    /* 연한 회색: 눈의 피로도 감소를 위한 배경 */
-  --surface-color: #FFFFFF;       /* 카드 및 모달용 화이트 서피스 */
-  
-  /* 텍스트 및 테두리 컬러 */
-  --text-primary: #1F2937;        /* 슬레이트 블랙: 메인 텍스트 */
-  --text-secondary: #4B5563;      /* 중간 회색: 서브 설명 텍스트 */
-  --text-muted: #9CA3AF;          /* 연한 회색: 비활성 및 플레이스홀더 */
-  --border-color: #E5E7EB;        /* 기본 구분선 및 인풋 테두리 */
-  
-  /* 상태 컬러 */
-  --error-color: #EF4444;         /* 코랄 레드: 에러 및 경고 */
-  --error-bg: #FEF2F2;            /* 에러 배경 연분홍 */
-  --success-bg: #ECFDF5;          /* 성공 배경 연초록 */
-  
-  /* 박스 섀도우 & 모서리 둥글기 */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+/* 구글 폰트 임포트 - 굵고 개성 있는 폰트 */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
-  /* 타이포그래피 */
-  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+/* 1. 디자인 시스템 전역 CSS 변수 정의 */
+:root {
+  /* ===== 주요 테마 컬러 (볼드 팔레트) ===== */
+  --color-yellow: #FFE04B;
+  /* 노랑: 메인 포인트 컬러 */
+  --color-purple: #A855F7;
+  /* 보라: 학습목표 카드 */
+  --color-pink: #F472B6;
+  /* 핑크: Q&A 카드 */
+  --color-orange: #FB923C;
+  /* 오렌지: 로드맵 카드 */
+  --color-mint: #2DD4BF;
+  /* 민트: 스케줄 카드 */
+  --color-black: #0D0D0D;
+  /* 메인 배경 블랙 */
+  --color-white: #FFFFFF;
+  /* 텍스트 & 카드 */
+
+  /* ===== 기능적 색상 매핑 ===== */
+  --primary-color: var(--color-yellow);
+  --primary-hover: #F5D30A;
+  --secondary-color: var(--color-mint);
+  --background-color: var(--color-black);
+  --surface-color: #1A1A1A;
+  /* 카드 배경 */
+  --surface-hover: #222222;
+
+  /* ===== 텍스트 ===== */
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-muted: #888888;
+  --text-dark: #0D0D0D;
+  /* 컬러 배경 위 검정 텍스트 */
+
+  /* ===== 테두리 ===== */
+  --border-color: #333333;
+  --border-bright: #555555;
+
+  /* ===== 상태 컬러 ===== */
+  --error-color: #FF6B6B;
+  --error-bg: #2D1515;
+  --success-bg: #0D2D1E;
+
+  /* ===== 모서리 둥글기 (더 크게 - 볼드 느낌) ===== */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* ===== 그림자 (컬러 글로우 느낌) ===== */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  /* ===== 타이포그래피 ===== */
+  --font-family: 'Noto Sans KR', 'Nunito', system-ui, -apple-system, sans-serif;
   --transition-fast: 0.2s ease;
 }
 
-/* 2. 브라우저 기본 스타일 초기화 (Reset) */
+/* 2. 브라우저 기본 스타일 초기화 */
 * {
   margin: 0;
   padding: 0;
@@ -50,9 +79,12 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  /* 블랙 배경에 미묘한 텍스처 */
+  background-image: radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 224, 75, 0.04) 0%, transparent 50%);
 }
 
-/* 3. 전체 레이아웃 래퍼 (Container) */
+/* 3. 전체 레이아웃 래퍼 */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -60,48 +92,53 @@ body {
   padding: 0 20px;
 }
 
-/* 4. 헤더 영역 */
+/* 4. 헤더 영역 - 블랙 + 노랑 포인트 */
 .site-header {
-  background-color: var(--surface-color);
-  border-bottom: 1px solid var(--border-color);
-  padding: 24px 0;
+  background-color: var(--color-black);
+  border-bottom: 3px solid var(--color-yellow);
+  padding: 28px 0;
   text-align: center;
-  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 24px rgba(255, 224, 75, 0.15);
 }
 
 .site-header h1 {
-  font-size: 1.85rem;
-  font-weight: 800;
-  color: var(--primary-color);
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--color-yellow);
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+  text-shadow: 0 0 20px rgba(255, 224, 75, 0.4);
 }
 
 .site-header p {
   margin-top: 6px;
   font-size: 0.95rem;
   color: var(--text-secondary);
+  font-weight: 700;
 }
 
 /* 5. 메인 본문 콘텐츠 그리드 레이아웃 */
 .main-content {
-  padding: 32px 0 60px 0;
+  padding: 36px 0 80px 0;
   display: flex;
   flex-direction: column;
   gap: 32px;
 }
 
-/* 2열 반응형 그리드: 상단 학습 설정 & Q&A 챗봇 */
+/* 2열 반응형 그리드: 학습 설정 & Q&A */
 .top-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
 }
 
-/* 대시보드 그리드: 로드맵과 일일 스케줄 */
+/* 대시보드 그리드: 로드맵 & 일일 스케줄 */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -110,15 +147,16 @@ body {
 
 /* 6. 푸터 영역 */
 .site-footer {
-  border-top: 1px solid var(--border-color);
-  background-color: var(--surface-color);
-  padding: 24px 0;
+  border-top: 2px solid var(--border-color);
+  background-color: var(--color-black);
+  padding: 28px 0;
   text-align: center;
   font-size: 0.875rem;
   color: var(--text-muted);
+  font-weight: 700;
 }
 
-/* 7. 반응형 미디어 쿼리 (데스크톱, 태블릿, 모바일) */
+/* 7. 반응형 미디어 쿼리 */
 
 /* 태블릿 (768px ~ 1024px) */
 @media (max-width: 1024px) {
@@ -142,7 +180,7 @@ body {
   }
 
   .site-header h1 {
-    font-size: 1.45rem;
+    font-size: 1.55rem;
   }
 
   .site-header p {
@@ -150,8 +188,7 @@ body {
   }
 
   .main-content {
-    padding: 20px 0 40px 0;
-    gap: 24px;
+    padding: 20px 0 50px 0;
+    gap: 20px;
   }
 }
-
